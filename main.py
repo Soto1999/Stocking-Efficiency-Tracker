@@ -28,3 +28,22 @@ while True:
 print("\nSummary")
 for e in entries:
     print(f"{e['employee']} - {e['aisle']} - {e['cases_per_hour']:.2f} cases/hour")
+
+print("\n Employee Averages")
+
+employee_totals = {}
+
+for e in entries:
+    employee = e['employee']
+    if employee not in employee_totals:
+        employee_totals[employee] = {
+            "total_cases_per_hour": 0,
+            "entry_count": 0
+        }
+
+    employee_totals[employee]["total_cases_per_hour"] += e['cases_per_hour']
+    employee_totals[employee]["entry_count"] += 1
+
+for employee, data in employee_totals.items():
+    average = data["total_cases_per_hour"] / data["entry_count"] if data["entry_count"] > 0 else 0
+    print(f"{employee} - {average:.2f} cases/hour")

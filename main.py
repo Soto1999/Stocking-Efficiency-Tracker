@@ -1,4 +1,20 @@
 from datetime import datetime, timedelta
+import csv
+import os
+
+file_name = "stocking_entries.csv"
+
+if not os.path.exists(file_name):
+    with open(file_name, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            "employee",
+            "aisle",
+            "cases",
+            "start_time",
+            "end_time",
+            "minutes",
+            "cases_per_hour"])
 
 # Preset employees
 employees = ["Jose", "Alyssa", "Alex", "John"]
@@ -90,6 +106,19 @@ while True:
 
     if confirm == "y":
         entries.append(entry)
+
+        with open(file_name, mode="a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([
+                entry['employee'],
+                entry['aisle'],
+                entry['cases'],
+                entry['start_time'],
+                entry['end_time'],
+                entry['minutes'],
+                entry['cases_per_hour']
+            ])
+
         print("Entry saved.")
     else:
         print("Entry discarded.")

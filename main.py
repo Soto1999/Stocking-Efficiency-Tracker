@@ -3,23 +3,9 @@ import csv
 import os
 
 file_name = "stocking_entries.csv"
-
-if not os.path.exists(file_name):
-    with open(file_name, mode="w", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow([
-            "employee",
-            "aisle",
-            "cases",
-            "start_time",
-            "end_time",
-            "minutes",
-            "cases_per_hour"])
-
-# Preset employees
+fieldnames = ["date", "employee", "aisle", "cases", "start_time", "end_time", "minutes", "cases_per_hour"]
 employees = ["Jose", "Alyssa", "Alex", "John"]
-
-# Preset aisles
+entries = []
 aisles = [
     "1", "2",
     "3", "4",
@@ -32,44 +18,77 @@ aisles = [
     "14"
 ]
 
-entries = []
 
-while True:
-
-    print("\n--- New Entry ---")
-
-    # Employee validation
+def get_valid_employees():
     while True:
         print("\nEmployees:", ", ".join(employees))
 
         employee = input("Employee name: ").title()
-
         if employee in employees:
-            break
+            return employee 
         else:
             print("Invalid employee.")
 
-    # Aisle validation
+def get_valid_date():
+    while True:
+        date = input("Date (YYYY-MM-DD): ")
+
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+            return date
+        except ValueError:
+            print("Invalid date format.")
+
+def get_valid_aisle():
     while True:
         print("\nAisles:", ", ".join(aisles))
 
         aisle = input("Aisle: ").upper()
 
         if aisle in aisles:
-            break
+            return aisle
         else:
             print("Invalid aisle.")
 
-    # Cases
-    cases = int(input("Cases stocked: "))
+def get_valid_cases():
+    while True:
+        try:
+            cases = int(input("Cases stocked: "))
+            if cases >= 0:
+                return cases
+            else:
+                print("Cases cannot be negative.")
+        except ValueError:
+            print("Invalid number of cases.")
+
+def get_valid_time(prompt):
+    while True:
+        time_str = input(prompt)
+        try:
+            return datetime.strptime(time_str, "%H:%M")
+        except ValueError:
+            print("Invalid time format. Please enter in HH:MM format.")
+
+if not os.path.exists(file_name):
+    with open(file_name, mode="w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames= fieldnames)
+        writer.writeheader()
+
+# Main loop
+while True:
+
+    print("\n--- New Entry ---")
+
+    # Employee validation
+    employee = get_valid_employees()
+    date = get_valid_date()
+    aisle = get_valid_aisle()
+    cases = get_valid_cases()
 
     # Time input
-    start_time = input("Start time (HH:MM): ")
-    end_time = input("End time (HH:MM): ")
+    start = get_valid_time("Start time (HH:MM): ")
+    end = get_valid_time("End time (HH:MM): ")
 
-    # Convert to datetime objects
-    start = datetime.strptime(start_time, "%H:%M")
-    end = datetime.strptime(end_time, "%H:%M")
 
     # Handle overnight shifts
     if end < start:
@@ -83,47 +102,42 @@ while True:
 
     # Create entry
     entry = {
+        "date": date,
         "employee": employee,
         "aisle": aisle,
         "cases": cases,
-        "start_time": start_time,
-        "end_time": end_time,
+        "start_time": start.strftime("%H:%M"),
+        "end_time": end.strftime("%H:%M"),
         "minutes": minutes,
         "cases_per_hour": cases_per_hour
     }
 
     # Review entry
     print("\n--- Review Entry ---")
+    print(f"Date: {date}")
     print(f"Employee: {employee}")
     print(f"Aisle: {aisle}")
     print(f"Cases: {cases}")
-    print(f"Start Time: {start_time}")
-    print(f"End Time: {end_time}")
+    print(f"Start Time: {start.strftime('%H:%M')}")
+    print(f"End Time: {end.strftime('%H:%M')}")
     print(f"Minutes Worked: {minutes:.0f}")
     print(f"Cases/Hour: {cases_per_hour:.2f}")
 
     confirm = input("\nSave entry? (y/n): ").lower()
 
+    # Asking for user confirmation before saving
     if confirm == "y":
         entries.append(entry)
-
+        # If user confirms, save to CSV
         with open(file_name, mode="a", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow([
-                entry['employee'],
-                entry['aisle'],
-                entry['cases'],
-                entry['start_time'],
-                entry['end_time'],
-                entry['minutes'],
-                entry['cases_per_hour']
-            ])
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writerow(entry)
 
         print("Entry saved.")
     else:
         print("Entry discarded.")
 
-    # Continue loop?
+    # Ask if user wants to add another entry
     cont = input("\nAdd another entry? (y/n): ").lower()
 
     if cont != "y":
@@ -134,6 +148,7 @@ print("\n--- Summary ---")
 
 for e in entries:
     print(
+        f"{e['date']} | "
         f"{e['employee']} | "
         f"{e['aisle']} | "
         f"{e['cases']} cases | "

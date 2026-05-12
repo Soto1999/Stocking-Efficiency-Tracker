@@ -19,6 +19,24 @@ aisles = [
 ]
 
 
+
+def create_entry(date, employee, aisle, cases, start, end):
+    minutes = calculate_minutes(start, end)
+    cases_per_hour = calculate_cases_per_hour(cases, minutes)
+    
+    entry = {
+        "date": date,
+        "employee": employee,
+        "aisle": aisle,
+        "cases": cases,
+        "start_time": start.strftime("%H:%M"),
+        "end_time": end.strftime("%H:%M"),
+        "minutes": round(minutes, 2),
+        "cases_per_hour": round(cases_per_hour, 2)
+    }
+
+    return entry
+
 def get_valid_employees():
     while True:
         print("\nEmployees:", ", ".join(employees))
@@ -69,6 +87,53 @@ def get_valid_time(prompt):
         except ValueError:
             print("Invalid time format. Please enter in HH:MM format.")
 
+def calculate_minutes(start, end):
+    if end < start:
+        end += timedelta(days=1)
+    return (end - start).total_seconds() / 60
+
+def calculate_cases_per_hour(cases, minutes):
+    if minutes > 0:
+        return (cases / minutes) * 60
+    else:
+        return 0
+    
+def review_entry(entry):
+    # Review entry
+    print("\n--- Review Entry ---")
+    print(f"Date: {entry['date']}")
+    print(f"Employee: {entry['employee']}")
+    print(f"Aisle: {entry['aisle']}")
+    print(f"Cases: {entry['cases']}")
+    print(f"Start Time: {entry['start_time']}")
+    print(f"End Time: {entry['end_time']}")
+    print(f"Minutes Worked: {entry['minutes']:.0f}")
+    print(f"Cases/Hour: {entry['cases_per_hour']:.2f}")
+    return
+
+def confirm_save():
+    while True:
+        confirm = input("\nSave entry? (y/n): ").lower()
+        if confirm in ["y", "n"]:
+            return confirm == "y"
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+
+def save_entry(entry):
+    entries.append(entry)
+    with open(file_name, mode="a", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writerow(entry)
+    print("Entry saved.")
+
+def additional_entry():
+    while True:
+        additional = input("\nAdd another entry? (y/n): ").lower()
+        if additional in ["y", "n"]:
+            return additional == "y"
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+            
 if not os.path.exists(file_name):
     with open(file_name, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames= fieldnames)
@@ -84,63 +149,20 @@ while True:
     date = get_valid_date()
     aisle = get_valid_aisle()
     cases = get_valid_cases()
-
-    # Time input
     start = get_valid_time("Start time (HH:MM): ")
     end = get_valid_time("End time (HH:MM): ")
-
-
-    # Handle overnight shifts
-    if end < start:
-        end += timedelta(days=1)
-
-    # Calculate minutes worked
-    minutes = (end - start).total_seconds() / 60
-
-    # Calculate cases per hour
-    cases_per_hour = (cases / minutes) * 60
-
-    # Create entry
-    entry = {
-        "date": date,
-        "employee": employee,
-        "aisle": aisle,
-        "cases": cases,
-        "start_time": start.strftime("%H:%M"),
-        "end_time": end.strftime("%H:%M"),
-        "minutes": minutes,
-        "cases_per_hour": cases_per_hour
-    }
-
-    # Review entry
-    print("\n--- Review Entry ---")
-    print(f"Date: {date}")
-    print(f"Employee: {employee}")
-    print(f"Aisle: {aisle}")
-    print(f"Cases: {cases}")
-    print(f"Start Time: {start.strftime('%H:%M')}")
-    print(f"End Time: {end.strftime('%H:%M')}")
-    print(f"Minutes Worked: {minutes:.0f}")
-    print(f"Cases/Hour: {cases_per_hour:.2f}")
-
-    confirm = input("\nSave entry? (y/n): ").lower()
-
-    # Asking for user confirmation before saving
-    if confirm == "y":
-        entries.append(entry)
-        # If user confirms, save to CSV
-        with open(file_name, mode="a", newline="") as file:
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writerow(entry)
-
-        print("Entry saved.")
+    minutes = calculate_minutes(start, end)
+    cases_per_hour = calculate_cases_per_hour(cases, minutes)
+    hours = minutes / 60
+    entry = create_entry(date, employee, aisle, cases, start, end)
+    review_entry(entry)
+    
+    if confirm_save():
+        save_entry(entry)
     else:
         print("Entry discarded.")
-
-    # Ask if user wants to add another entry
-    cont = input("\nAdd another entry? (y/n): ").lower()
-
-    if cont != "y":
+    
+    if not additional_entry():
         break
 
 # Summary

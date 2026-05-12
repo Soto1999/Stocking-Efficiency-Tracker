@@ -18,8 +18,6 @@ aisles = [
     "14"
 ]
 
-
-
 def create_entry(date, employee, aisle, cases, start, end):
     minutes = calculate_minutes(start, end)
     cases_per_hour = calculate_cases_per_hour(cases, minutes)
@@ -133,12 +131,23 @@ def additional_entry():
             return additional == "y"
         else:
             print("Invalid input. Please enter 'y' or 'n'.")
-            
+
 if not os.path.exists(file_name):
     with open(file_name, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames= fieldnames)
         writer.writeheader()
 
+def print_summary():
+    print("\n--- Summary ---")
+    for e in entries:
+        print(
+            f"{e['date']} | "
+            f"{e['employee']} | "
+            f"{e['aisle']} | "
+            f"{e['cases']} cases | "
+            f"{e['minutes']:.0f} min | "
+            f"{e['cases_per_hour']:.2f} cases/hour"
+        )
 # Main loop
 while True:
 
@@ -165,15 +174,4 @@ while True:
     if not additional_entry():
         break
 
-# Summary
-print("\n--- Summary ---")
-
-for e in entries:
-    print(
-        f"{e['date']} | "
-        f"{e['employee']} | "
-        f"{e['aisle']} | "
-        f"{e['cases']} cases | "
-        f"{e['minutes']:.0f} min | "
-        f"{e['cases_per_hour']:.2f} cases/hour"
-    )
+print_summary()

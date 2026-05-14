@@ -5,7 +5,6 @@ import os
 file_name = "stocking_entries.csv"
 fieldnames = ["date", "employee", "aisle", "cases", "start_time", "end_time", "minutes", "cases_per_hour"]
 employees = ["Jose", "Alyssa", "Alex", "John"]
-entries = []
 aisles = [
     "1", "2",
     "3", "4",
@@ -117,7 +116,7 @@ def confirm_save():
         else:
             print("Invalid input. Please enter 'y' or 'n'.")
 
-def save_entry(entry):
+def save_entry(entry, entries):
     entries.append(entry)
     with open(file_name, mode="a", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -132,12 +131,28 @@ def additional_entry():
         else:
             print("Invalid input. Please enter 'y' or 'n'.")
 
+def load_entries():
+    entries = []
+
+    if not os.path.exists(file_name):
+        return entries
+
+    with open(file_name, mode='r', newline='') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            row['cases'] = int(row['cases'])
+            row['minutes'] = float(row['minutes'])
+            row['cases_per_hour'] = float(row['cases_per_hour'])
+            entries.append(row)
+
+    return entries
+
 if not os.path.exists(file_name):
     with open(file_name, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames= fieldnames)
         writer.writeheader()
 
-def print_summary():
+def print_summary(entries):
     print("\n--- Summary ---")
     for e in entries:
         print(
@@ -148,30 +163,35 @@ def print_summary():
             f"{e['minutes']:.0f} min | "
             f"{e['cases_per_hour']:.2f} cases/hour"
         )
-# Main loop
-while True:
+def main():
+    # Load existing entries
+    entries = load_entries()
+    # Main loop
+    while True:
 
-    print("\n--- New Entry ---")
+        print("\n--- New Entry ---")
 
-    # Employee validation
-    employee = get_valid_employees()
-    date = get_valid_date()
-    aisle = get_valid_aisle()
-    cases = get_valid_cases()
-    start = get_valid_time("Start time (HH:MM): ")
-    end = get_valid_time("End time (HH:MM): ")
-    minutes = calculate_minutes(start, end)
-    cases_per_hour = calculate_cases_per_hour(cases, minutes)
-    hours = minutes / 60
-    entry = create_entry(date, employee, aisle, cases, start, end)
-    review_entry(entry)
-    
-    if confirm_save():
-        save_entry(entry)
-    else:
-        print("Entry discarded.")
-    
-    if not additional_entry():
-        break
+        # Employee validation
+        employee = get_valid_employees()
+        date = get_valid_date()
+        aisle = get_valid_aisle()
+        cases = get_valid_cases()
+        start = get_valid_time("Start time (HH:MM): ")
+        end = get_valid_time("End time (HH:MM): ")
+        minutes = calculate_minutes(start, end)
+        cases_per_hour = calculate_cases_per_hour(cases, minutes)
+        hours = minutes / 60
+        entry = create_entry(date, employee, aisle, cases, start, end)
+        review_entry(entry)
+        
+        if confirm_save():
+            save_entry(entry, entries)
+        else:
+            print("Entry discarded.")
+        
+        if not additional_entry():
+            break
+    print_summary(entries)
 
-print_summary()
+if __name__ == "__main__":
+    main()

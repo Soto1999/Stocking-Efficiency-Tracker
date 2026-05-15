@@ -234,14 +234,36 @@ def print_employee_averages(entries):
     for employee, data in employee_totals.items():
         average = data["total_cases_per_hour"] / data["entry_count"]
         print(f"{employee}: {average:.2f} cases/hour")
+def print_employee_entries(entries):
+    employee = get_valid_employees()
 
+    filter_entries =[]
+
+    for entry in entries:
+        if entry['employee'] == employee:
+            filter_entries.append(entry)
+
+    print(f"\n--- Enteries for {employee} ---")
+
+    if not filter_entries:
+        print("No entries found for this employee.")
+        return
+    for e in filter_entries:
+        print(
+            f"{e['date']} | "
+            f"{e['aisle']} | "
+            f"{e['cases']} cases | "
+            f"{e['minutes']:.0f} min | "
+            f"{e['cases_per_hour']:.2f} cases/hour"
+        )
 def display_menu():
     print("\n--- Stocking Efficiency Tracker ---")
     print("1. Add new entry")
     print("2. View summary")
     print("3. View employee averages")
-    print("4. Delete last entry")
-    print("5. Exit")
+    print("4. View Employee Entries")
+    print("5. Delete last entry")
+    print("6. Exit")
 
 def main():
     # Load existing entries
@@ -260,8 +282,10 @@ def main():
         elif choice == "3":
             print_employee_averages(entries)
         elif choice == "4":
-            delete_last_entry(entries)
+            print_employee_entries(entries)
         elif choice == "5":
+            delete_last_entry(entries)
+        elif choice == "6":
             break
         else:
             print("Invalid Choice.")

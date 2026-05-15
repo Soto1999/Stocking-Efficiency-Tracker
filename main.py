@@ -172,7 +172,37 @@ def add_entry(entries):
     else:
         print("Entry discarded.")
 
+def print_entries_by_date(entries):
+    print_available_dates(entries)
+    date = get_valid_date()
 
+    filtered_entries = []
+
+    for entry in entries:
+        if entry['date'] == date:
+            filtered_entries.append(entry)
+
+    print(f"\n--- Entries for {date} ---")
+
+    if not filtered_entries:
+        print("No entries found for this date.")
+        return
+    for e in filtered_entries:
+        print(
+            f"{e['employee']} | "
+            f"{e['aisle']} | "
+            f"{e['cases']} cases | "
+            f"{e['minutes']:.0f} min | "
+            f"{e['cases_per_hour']:.2f} cases/hour"
+        )
+def print_available_dates(entries):
+    dates = set(entry['date'] for entry in entries)
+    print("\nAvailable Dates:")
+    for date in sorted(dates):
+        print(date)
+    if not dates:
+        print("No entries available.")
+        return
 
 def rewrite_csv(entries):
     with open(file_name, mode="w", newline="") as file:
@@ -262,8 +292,9 @@ def display_menu():
     print("2. View summary")
     print("3. View employee averages")
     print("4. View Employee Entries")
-    print("5. Delete last entry")
-    print("6. Exit")
+    print("5. View Entries by Date")
+    print("6. Delete last entry")
+    print("7. Exit")
 
 def main():
     # Load existing entries
@@ -284,8 +315,10 @@ def main():
         elif choice == "4":
             print_employee_entries(entries)
         elif choice == "5":
-            delete_last_entry(entries)
+            print_entries_by_date(entries)
         elif choice == "6":
+            delete_last_entry(entries)
+        elif choice == "7":
             break
         else:
             print("Invalid Choice.")

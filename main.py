@@ -147,6 +147,26 @@ def load_entries():
 
     return entries
 
+def add_entry(entries):
+    print("\n--- New Entry ---")
+
+    employee = get_valid_employees()
+    date = get_valid_date()
+    aisle = get_valid_aisle()
+    cases = get_valid_cases()
+    start = get_valid_time("Start time (HH:MM): ")
+    end = get_valid_time("End time (HH:MM): ")
+    
+    entry = create_entry(date, employee, aisle, cases, start, end)
+    review_entry(entry)
+
+    if confirm_save():
+        save_entry(entry, entries)
+        if additional_entry():
+            add_entry(entries)
+    else:
+        print("Entry discarded.")
+
 if not os.path.exists(file_name):
     with open(file_name, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames= fieldnames)
@@ -185,36 +205,33 @@ def print_employee_averages(entries):
         average = data["total_cases_per_hour"] / data["entry_count"]
         print(f"{employee}: {average:.2f} cases/hour")
 
+def display_menu():
+    print("\n--- Stocking Efficiency Tracker ---")
+    print("1. Add new entry")
+    print("2. View summary")
+    print("3. View employee averages")
+    print("4. Exit")
+
 def main():
     # Load existing entries
     entries = load_entries()
     # Main loop
     while True:
 
-        print("\n--- New Entry ---")
+        display_menu()
 
-        # Employee validation
-        employee = get_valid_employees()
-        date = get_valid_date()
-        aisle = get_valid_aisle()
-        cases = get_valid_cases()
-        start = get_valid_time("Start time (HH:MM): ")
-        end = get_valid_time("End time (HH:MM): ")
-        minutes = calculate_minutes(start, end)
-        cases_per_hour = calculate_cases_per_hour(cases, minutes)
-        hours = minutes / 60
-        entry = create_entry(date, employee, aisle, cases, start, end)
-        review_entry(entry)
-        
-        if confirm_save():
-            save_entry(entry, entries)
-        else:
-            print("Entry discarded.")
-        
-        if not additional_entry():
+        choice = input("Select an option: ")
+
+        if choice == "1":
+            add_entry(entries)
+        elif choice == "2":
+            print_summary(entries)
+        elif choice == "3":
+            print_employee_averages(entries)
+        elif choice == "4":
             break
-    print_summary(entries)
-    print_employee_averages(entries)
+        else:
+            print("Invalid Choice.")
 
 if __name__ == "__main__":
     main()

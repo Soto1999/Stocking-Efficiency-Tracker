@@ -163,6 +163,28 @@ def print_summary(entries):
             f"{e['minutes']:.0f} min | "
             f"{e['cases_per_hour']:.2f} cases/hour"
         )
+
+def print_employee_averages(entries):
+    employee_totals = {}
+
+    for entry in entries:
+        employee = entry['employee']
+
+        if employee not in employee_totals:
+            employee_totals[employee] = {
+                "total_cases_per_hour": 0,
+                "entry_count": 0
+            }
+
+        employee_totals[employee]["total_cases_per_hour"] += entry['cases_per_hour']
+        employee_totals[employee]["entry_count"] += 1
+
+    print("\n--- Employee Averages ---")
+
+    for employee, data in employee_totals.items():
+        average = data["total_cases_per_hour"] / data["entry_count"]
+        print(f"{employee}: {average:.2f} cases/hour")
+
 def main():
     # Load existing entries
     entries = load_entries()
@@ -192,6 +214,7 @@ def main():
         if not additional_entry():
             break
     print_summary(entries)
+    print_employee_averages(entries)
 
 if __name__ == "__main__":
     main()

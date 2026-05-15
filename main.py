@@ -17,6 +17,11 @@ aisles = [
     "14"
 ]
 
+if not os.path.exists(file_name):
+    with open(file_name, mode="w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames= fieldnames)
+        writer.writeheader()
+
 def create_entry(date, employee, aisle, cases, start, end):
     minutes = calculate_minutes(start, end)
     cases_per_hour = calculate_cases_per_hour(cases, minutes)
@@ -167,10 +172,35 @@ def add_entry(entries):
     else:
         print("Entry discarded.")
 
-if not os.path.exists(file_name):
+
+
+def rewrite_csv(entries):
     with open(file_name, mode="w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames= fieldnames)
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
+        for entry in entries:
+            writer.writerow(entry)
+
+def delete_last_entry(entries):
+    if not entries:
+        print("No entries to delete.")
+        return
+
+    last_entry = entries[-1]
+    print("\n--- Last Entry ---")
+    review_entry(last_entry)
+    confirm = input("Delete this entry? (y/n): ").lower()
+    if confirm == "y":
+        entries.pop()
+        rewrite_csv(entries)
+        print("Last entry deleted.")
+    elif confirm == "n":
+        print("Entry not deleted.")
+    else:
+        print("Invalid input. Entry not deleted.")
+        return
+
+    print("Last entry deleted.")
 
 def print_summary(entries):
     print("\n--- Summary ---")
@@ -210,7 +240,8 @@ def display_menu():
     print("1. Add new entry")
     print("2. View summary")
     print("3. View employee averages")
-    print("4. Exit")
+    print("4. Delete last entry")
+    print("5. Exit")
 
 def main():
     # Load existing entries
@@ -229,6 +260,8 @@ def main():
         elif choice == "3":
             print_employee_averages(entries)
         elif choice == "4":
+            delete_last_entry(entries)
+        elif choice == "5":
             break
         else:
             print("Invalid Choice.")

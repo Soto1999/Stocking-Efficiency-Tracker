@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import csv
 import os
 
-file_name = "stocking_entries.csv"
+file_name = "data/stocking_entries.csv"
 fieldnames = ["date", "employee", "aisle", "cases", "start_time", "end_time", "minutes", "cases_per_hour"]
 employees = ["Jose", "Alyssa", "Alex", "John"]
 aisles = [
@@ -171,6 +171,34 @@ def add_entry(entries):
             add_entry(entries)
     else:
         print("Entry discarded.")
+def print_entries_by_week(entries):
+    print_available_dates(entries)
+    week_end_str = get_valid_date()
+    week_end = datetime.strptime(week_end_str, "%Y-%m-%d")
+    week_start = week_end - timedelta(days=6)
+
+    filtered_entries = []
+
+    for entry in entries:
+        entry_date = datetime.strptime(entry['date'], "%Y-%m-%d")
+        if week_start <= entry_date <= week_end:
+            filtered_entries.append(entry)
+
+    print(f"\n--- Entries for Week Ending {week_end_str} ---")
+    print(f"Week Range: {week_start.strftime('%Y-%m-%d')} to {week_end_str}")
+
+    if not filtered_entries:
+        print("No entries found for this week.")
+        return
+    for e in filtered_entries:
+        print(
+            f"{e['date']} | "
+            f"{e['employee']} | "
+            f"{e['aisle']} | "
+            f"{e['cases']} cases | "
+            f"{e['minutes']:.0f} min | "
+            f"{e['cases_per_hour']:.2f} cases/hour"
+        )
 
 def print_entries_by_date(entries):
     print_available_dates(entries)
@@ -293,8 +321,9 @@ def display_menu():
     print("3. View employee averages")
     print("4. View Employee Entries")
     print("5. View Entries by Date")
-    print("6. Delete last entry")
-    print("7. Exit")
+    print("6. View Entries by Week Ending")
+    print("7. Delete last entry")
+    print("8. Exit")
 
 def main():
     # Load existing entries
@@ -317,8 +346,10 @@ def main():
         elif choice == "5":
             print_entries_by_date(entries)
         elif choice == "6":
-            delete_last_entry(entries)
+            print_entries_by_week(entries)
         elif choice == "7":
+            delete_last_entry(entries)
+        elif choice == "8":
             break
         else:
             print("Invalid Choice.")
